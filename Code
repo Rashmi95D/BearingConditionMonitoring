@@ -1,0 +1,467 @@
+%%%%%%%%%%%%%%%%%%%% Rashmi Wijesundara (1901666) %%%%%%%%%%%%%%%%%%%%%%%%
+
+clear;
+clc;
+close all;
+
+% Importing raw vibration data to the MATLAB workspace
+load 'baseline_1';                  % Import baseline 1 data to the workspace
+BaselineSignal_1 = bearing.gs(:,1); % Specifiying baseline signal 1 for analysis
+load 'baseline_2';                  % Import baseline 2 data to the workspace
+BaselineSignal_2 = bearing.gs(:,1); % Specifiying baseline signal 2 for analysis
+load 'baseline_3';                  % Import baseline 3 data to the workspace
+BaselineSignal_3 = bearing.gs(:,1); % Specifiying baseline signal 3 for analysis
+load 'baseline_4';                  % Import baseline 3 data to the workspace
+BaselineSignal_4 = bearing.gs(:,1); % Specifiying baseline signal 3 for analysis
+
+
+load 'Fault_1(108)';                     % Import fault 1 data to the workspace
+FaultySignal_1 = bearing.gs(:,1);   % Specifiying fauly signal 1 for analysis
+load 'Fault_2(3003)';                     % Import fault 2 data to the workspace
+FaultySignal_2 = bearing.gs(:,1);   % Specifiying fauly signal 2 for analysis
+load 'Fault_3(186)';                     % Import fault 1 data to the workspace
+FaultySignal_3 = bearing.gs(:,1);   % Specifiying fauly signal 1 for analysis
+load 'Fault_4(130)';                     % Import fault 2 data to the workspace
+FaultySignal_4 = bearing.gs(:,1);   % Specifiying fauly signal 2 for analysis
+
+
+%%%%%%%%%%%%%%%% Synchronous Averaging of Baseline Signal %%%%%%%%%%%%%%%%
+
+BaselineSignal = (BaselineSignal_1 + BaselineSignal_2 + BaselineSignal_3 + BaselineSignal_4)/3;
+
+% Defining baseline signal specifications
+Is_Rate = 25;                             % Input shaft rate (Hz)
+Fs_Baseline = 97656;                      % Baseline signal frequency (Hz)
+St_Baseline = 6;                          % Baseline signal time duration (s)
+NFs_Baseline = Fs_Baseline*St_Baseline;   % Total faulty signal frequency (Hz)
+Ts_Baseline = NFs_Baseline/Fs_Baseline;   % Baseline signal time period (s)
+
+BL = length(BaselineSignal);              % Baseline signal length
+
+Td_Bs = (0:BL-1)/Fs_Baseline;             % Baseline signal time domain (s)
+
+% Defining faulty signal specifications
+Fs_Faulty = 48828;                  % Faulty signal frequency (Hz)
+St_Faulty = 3;                      % Faulty signal time duration (s)
+NFs_Faulty = Fs_Faulty*St_Faulty;   % Total faulty signal frequency (Hz)
+Ts_Faulty = NFs_Faulty/Fs_Faulty;   % Faulty signal time period (s)
+
+FL_1 = length(FaultySignal_1);      % Faulty signal 1 length
+FL_2 = length(FaultySignal_2);      % Faulty signal 2 length
+
+Td_Fs1 = (0:FL_1-1)/Fs_Faulty;      % Faulty signal 1 time domain (s)
+Td_Fs2 = (0:FL_2-1)/Fs_Faulty;      % Faulty signal 1 time domain (s)
+
+%%%%%%%%%%%%%%%%%%%%%%%% Time Domain Analysis %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Baseline signal time domain analysis
+figure 
+plot(Td_Bs, BaselineSignal,'m');% Td_Bs time domain in x and signal in y axis 
+% Line colour = Magenta
+grid on;                        % Enabling the graph grid
+xlim([0 0.1]);                  % Limiting the x axis from 0 to 0.1s            
+xlabel('Time (s)');             % Graph x axis label
+ylabel('Acceleration (g)');     % Graph y axis label
+title('Baseline Signal : Time Domain Analysis');         % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+% Faulty signal 1 time domain analysis
+figure 
+plot(Td_Fs1, FaultySignal_1,'b');% Td_Fs1 time domain in x and signal in y axis 
+% Line colour = Blue
+grid on;                        % Enabling the graph grid
+xlim([0 0.1]);                  % Limiting the x axis from 0 to 0.1s            
+xlabel('Time (s)');             % Graph x axis label
+ylabel('Acceleration (g)');     % Graph y axis label
+title('Faulty Signal 1 : Time Domain Analysis');         % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+% Faulty signal 2 time domain analysis
+figure 
+plot(Td_Fs2, FaultySignal_2,'r');% Td_Fs2 time domain in x and signal in y axis 
+% Line colour = Red
+grid on;                        % Enabling the graph grid
+xlim([0 0.1]);                  % Limiting the x axis from 0 to 0.1s            
+xlabel('Time (s)');             % Graph x axis label
+ylabel('Acceleration (g)');     % Graph y axis label
+title('Faulty Signal 2 : Time Domain Analysis');          % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18);  % Custom font and size
+
+%%%%%%%%%%%%%%%%%%% Fast Fourrier Transform Analysis %%%%%%%%%%%%%%%%%%%%%
+
+% Baseline signal FFT analysis
+FFT_Baseline = fft(BaselineSignal);             % FFT of "Baseline Signal"   
+LFFT_Baseline = length(FFT_Baseline);           % Baseline signal length
+Fx_Baseline = 500*LFFT_Baseline/Fs_Baseline;    % Baseline frequency domain
+Fxx_Baseline = (1:Fx_Baseline)*Fs_Baseline/LFFT_Baseline;% Baseline normalized frequency
+LFxx_Baseline = length(Fxx_Baseline);           % Baseline frequency domain length
+Fy_Baseline = abs(FFT_Baseline(1:LFxx_Baseline));% Obtaining the magnitude 
+% and extrating the single sided signal of baseline FFT
+
+figure % Plotting the graph with Fxx_Baseline in x and Fy_Baseline in y axis.
+plot(Fxx_Baseline, Fy_Baseline,'m');        % Line colour = Magenta 
+grid on;                                    % Enabling the graph grid
+ylim([0 4700])                              % Limiting y axis from 0 to 4700 
+xlabel('Frequency (Hz)');                   % Graph x axis label
+ylabel('Amplitude');                        % Graph y axis label
+title('Baseline Signal : FFT Analysis');    % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18);  % Custom font and size
+
+
+% Faulty signal 1 FFT analysis
+FFT_Faulty1 = fft(FaultySignal_1);              % FFT of "Faulty Signal 1"   
+LFFT_Faulty1 = length(FFT_Faulty1);             % Faulty_1 signal length
+Fx_Faulty1 = 500*LFFT_Faulty1/Fs_Faulty;        % Faulty_1 frequency domain
+Fxx_Faulty1 = (1:Fx_Faulty1)*Fs_Faulty/LFFT_Faulty1;% Faulty_1 normalized frequency
+LFxx_Faulty1 = length(Fxx_Faulty1);             % Faulty_1 frequency domain length
+Fy_Faulty1 = abs(FFT_Faulty1(1:LFxx_Faulty1));  % Obtaining the magnitude 
+% and extrating the single sided signal of faulty_1 FFT
+
+figure % Plotting the graph with Fxx_Faulty1 in x and Fy_Faulty1 in y axis.
+plot(Fxx_Faulty1, Fy_Faulty1,'b');          % Line colour = Blue
+grid on;                                    % Enabling the graph grid
+ylim([0 9400])                              % Limiting y axis from 0 to 9400 
+xlabel('Frequency (Hz)');                   % Graph x axis label
+ylabel('Amplitude');                        % Graph y axis label
+title('Faulty Signal 1 : FFT Analysis');    % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18);  % Custom font and size
+
+
+% Faulty signal 2 FFT analysis
+FFT_Faulty2 = fft(FaultySignal_2);              % FFT of "Faulty Signal_2"   
+LFFT_Faulty2 = length(FFT_Faulty2);             % Faulty_2 signal length
+Fx_Faulty2 = 500*LFFT_Faulty2/Fs_Faulty;        % Faulty_2 frequency domain
+Fxx_Faulty2 = (1:Fx_Faulty2)*Fs_Faulty/LFFT_Faulty2;% Faulty_2 normalized frequency
+LFxx_Faulty2 = length(Fxx_Faulty2);             % Faulty_2 frequency domain length
+Fy_Faulty2 = abs(FFT_Faulty2(1:LFxx_Faulty2));  % Obtaining the magnitude 
+% and extrating the single sided signal of faulty_2 FFT
+
+figure % Plotting the graph with Fxx_Faulty2 in x and Fy_Faulty2 in y axis.
+plot(Fxx_Faulty2, Fy_Faulty2,'r');          % Line colour = Red
+grid on;                                    % Enabling the graph grid
+ylim([0 2100])                              % Limiting y axis from 0 to 9400 
+xlabel('Frequency (Hz)');                   % Graph x axis label
+ylabel('Amplitude');                        % Graph y axis label
+title('Faulty Signal 2 : FFT Analysis');    % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18);  % Custom font and size
+
+%%%%%%%%%%%%%%%%%%%%%% Hilbert Filtering Analysis %%%%%%%%%%%%%%%%%%%%%%%%
+
+% Baseline signal Hilbert analysis
+H_Baseline = hilbert(BaselineSignal);   % Baseline signal hilbert transformation
+HH_Baseline = abs(H_Baseline);          % Magnitude of baseline hilbert signal
+FFT_HH_Baseline = fft(HH_Baseline(1:NFs_Baseline)',NFs_Baseline); % FFT
+% transform of magnitude baseline hilbert and obtaining the single sided signal
+FFT_HH_Baseline = abs(FFT_HH_Baseline); % Magnitude of FFT hilbert signal 
+XH_Baseline = (0:NFs_Baseline-1)/Ts_Baseline; % Normalizing the x axis
+XXH_Baseline = XH_Baseline(2:3000);     % Range for x axis
+YH_Baseline = FFT_HH_Baseline/(norm(FFT_HH_Baseline)); % Normalizing the y axis
+YYH_Baseline = YH_Baseline(2:3000);     % Range for y axis
+
+figure % Plotting the graph with XXH_Baseline in x and YYH_Baseline in y axis.
+plot(XXH_Baseline, YYH_Baseline, 'm');      % Line colour = Magenta 
+grid on;                                    % Enabling the graph grid
+ylim([0 0.0085])                            % Limiting y axis from 0 to 0.0085
+xlabel('Frequency (Hz)');                   % Graph x axis label
+ylabel('Magnitude');                        % Graph y axis label
+title('Baseline Signal : Hilbert Analysis');% Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18);  % Custom font and size
+H = gca;               % Getting the handle of the current axis
+H.YAxis.Exponent = 0;  % Making y axis exponents equal to zero
+
+% Faulty signal 1 Hilbert analysis
+H_Faulty1 = hilbert(FaultySignal_1);    % Faulty signal 1 hilbert transformation
+HH_Faulty1 = abs(H_Faulty1);            % Magnitude of faulty signal 1 hilbert 
+FFT_HH_Faulty1 = fft(HH_Faulty1(1:NFs_Faulty)',NFs_Faulty); % FFT
+% transform of magnitude faulty 1 hilbert and obtaining the single sided signal
+FFT_HH_Faulty1 = abs(FFT_HH_Faulty1);   % Magnitude of FFT hilbert 
+XH_Faulty1 = (0:NFs_Faulty-1)/Ts_Faulty;% Normalizing the x axis
+XXH_Faulty1 = XH_Faulty1(2:3000);       % Range for x axis
+YH_Faulty1 = FFT_HH_Faulty1/(norm(FFT_HH_Faulty1)); % Normalizing the y axis
+YYH_Faulty1 = YH_Faulty1(2:3000);       % Range for y axis
+
+figure % Plotting the graph with XXH_Faulty1 in x and YYH_Faulty1 in y axis.
+plot(XXH_Faulty1, YYH_Faulty1, 'b');        % Line colour = Blue 
+grid on;                                    % Enabling the graph grid
+ylim([0 0.27]);                             % Limiting y axis from 0 to 0.027
+xlabel('Frequency (Hz)');                   % Graph x axis label
+ylabel('Magnitude');                        % Graph y axis label
+title('Faulty Signal 1 : Hilbert Analysis');% Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18);  % Custom font and size
+
+
+% Faulty signal 2 Hilbert analysis
+H_Faulty2 = hilbert(FaultySignal_2);    % Faulty signal 2 hilbert transformation
+HH_Faulty2 = abs(H_Faulty2);            % Magnitude of faulty signal 2 hilbert 
+FFT_HH_Faulty2 = fft(HH_Faulty2(1:NFs_Faulty)',NFs_Faulty); % FFT
+% transform of magnitude faulty 2 hilbert and obtaining the single sided signal
+FFT_HH_Faulty2 = abs(FFT_HH_Faulty2);   % Magnitude of FFT hilbert 
+XH_Faulty2 = (0:NFs_Faulty-1)/Ts_Faulty;% Normalizing the x axis
+XXH_Faulty2 = XH_Faulty2(2:3000);       % Range for x axis
+YH_Faulty2 = FFT_HH_Faulty2/(norm(FFT_HH_Faulty2)); % Normalizing they axis
+YYH_Faulty2 = YH_Faulty2(2:3000);       % Range for y axis
+
+figure % Plotting the graph with XXH_Faulty2 in x and YYH_Faulty2 in y axis.
+plot(XXH_Faulty2, YYH_Faulty2, 'r');        % Line colour = Red 
+grid on;                                    % Enabling the graph grid
+ylim([0 0.265]);                            % Limiting y axis from 0 to 0.026
+xlabel('Frequency (Hz)');                   % Graph x axis label
+ylabel('Magnitude');                        % Graph y axis label
+title('Faulty Signal 2 : Hilbert Analysis');% Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18);  % Custom font and size
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%% Envelope Signal Analysis %%%%%%%%%%%%%%%%%%%%%%%
+
+% Baeline signal time domain and envelope signal analysis
+figure % Plotting the zoomed in time domain of baseline signal
+subplot(2, 1, 1);                   % Subolot with another graph               
+plot(Td_Bs, BaselineSignal,'m');    % Td_Bs in x and Baseline signal in y axis
+% Line colour = Magenta 
+xlim([0.04 0.06]);                  % Limitting x axis from 0.04s to 0.06s
+xlabel('Time (s)');                 % Graph x axis label 
+ylabel('Acceleration (g)');         % Graph y axis label
+title('Baseline Signal : Zoomed Time Domain Analysis');  % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+subplot(2, 1, 2);           % Plotting the envelope of baseline signal 
+% to extract the modulated amplitude. 
+[B_pEnv, B_fEnv, B_yEnv, B_xEnv] = envspectrum(BaselineSignal, Fs_Baseline);
+% Computing the envelope spectrum of baseline signal with respect to
+% baseline signal sampling time of 97656
+plot(B_xEnv, B_yEnv, 'm'); % Plotting the envelope signal with B_xEnv in x 
+% and B_yEnv on in y axis.
+% Line colour = Magenta
+xlim([0.04 0.06]);          % Limitting the x axis from 0.04s to 0.06s
+xlabel('Time (s)');         % Graph x axis label
+ylabel('Acceleration (g)'); % Graph y axis label
+title('Baseline Signal : Envelope');                     % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+% Faulty signal 1 time domain and envelope signal analysis
+figure % Plotting the zoomed in time domain of faulty signal 1
+subplot(2, 1, 1);                   % Subolot with another graph               
+plot(Td_Fs1, FaultySignal_1,'b');   % Td_Fs1 in x and Faulty signal 1 in y axis
+% Line colour = Blue
+xlim([0.04 0.06]);                  % Limitting x axis for zoom from 0.04s to 0.06s
+xlabel('Time (s)');                 % Graph x axis label 
+ylabel('Acceleration (g)');         % Graph y axis label
+title('Faulty Signal 1 : Zoomed Time Domain Analysis');  % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+subplot(2, 1, 2);           % Plotting the envelope of the faulty signal 1 
+% to extract the modulated amplitude. 
+[F1_pEnv, F1_fEnv, F1_yEnv, F1_xEnv] = envspectrum(FaultySignal_1, Fs_Faulty);
+% Computing the envelope spectrum of faulty signal 1 with respect to faulty
+% signal sampling time of 48828
+plot(F1_xEnv, F1_yEnv, 'b');% Plotting the envelope signal with F1_xEnv in x 
+% and F1_yEnv on in y axis.
+% Line colour = Blue
+xlim([0.04 0.06]);          % Limitting the x axis from 0.04s to 0.06s
+xlabel('Time (s)');         % Graph x axis label
+ylabel('Acceleration (g)'); % Graph y axis label
+title('Faulty Signal 1 : Envelope');                     % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+% Faulty signal 2 time domain and envelope signal analysis
+figure % Plotting the zoomed in time domain of faulty signal 2
+subplot(2, 1, 1);                   % Subolot with another graph               
+plot(Td_Fs2, FaultySignal_2,'r');   % Td_Fs2 in x and Faulty signal 2 in y axis
+% Line colour = Red
+xlim([0.048 0.068]);                % Limitting x axis from 0.048s to 0.068s
+xlabel('Time (s)');                 % Graph x axis label 
+ylabel('Acceleration (g)');         % Graph y axis label
+title('Faulty Signal 2 : Zoomed Time Domain Analysis');  % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+subplot(2, 1, 2);           % Plotting the envelope of faulty signal 2 to 
+% extract the modulated amplitude. 
+[F2_pEnv, F2_fEnv, F2_yEnv, F2_xEnv] = envspectrum(FaultySignal_2, Fs_Faulty);
+% Computing the envelope spectrum of faulty signal 2 with respect to faulty
+% signal sampling time of 48828
+plot(F2_xEnv, F2_yEnv, 'r');% Plotting the envelope signal with F2_xEnv in x 
+% and F2_yEnv on in y axis.
+% Line colour = Red
+xlim([0.048 0.068]);        % Limitting the x axis from 0.048s to 0.068s
+xlabel('Time (s)');         % Graph x axis label
+ylabel('Acceleration (g)'); % Graph y axis label
+title('Faulty Signal 2 : Envelope');                     % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+%%%%%%%%%%%%%%%%%%%%%% Envelope Spectrum Analysis %%%%%%%%%%%%%%%%%%%%%%%%
+
+% Envelope spectrum analysis for baseline signal
+figure % Plotting the power spectrum of the envelope baseline signal
+plot(B_fEnv, B_pEnv,'m'); % B_fEnv on x and B_pEnv on y axis
+% Line colour = Magenta
+xlim([0 1000]);             % Limitting the x axis from 0 to 1000 Hz
+xlabel('Frequency (Hz)');   % Graph x axis label
+ylabel('Peak Amplitude');   % Graph y axis label
+title('Baseline Signal : Envelope Spectrum');            % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+H = gca;               % Getting the handle of the current axis
+H.YAxis.Exponent = 0;  % Making y axis exponents equal to zero
+
+% Envelope spectrum analysis for faulty signal 1
+figure % Plotting the power spectrum of the envelope faulty signal 1
+plot(F1_fEnv, F1_pEnv,'b'); % F1_fEnv on x and F1_pEnv on y axis
+% Line colour = Blue
+xlim([0 1000]);             % Limitting the x axis from 0 to 1000 Hz
+xlabel('Frequency (Hz)');   % Graph x axis label
+ylabel('Peak Amplitude');   % Graph y axis label
+title('Faulty Signal 1 : Envelope Spectrum');            % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+% Envelope spectrum analysis for faulty signal 2
+figure % Plotting the power spectrum of the envelope faulty signal 5
+plot(F2_fEnv, F2_pEnv,'r'); % F2_fEnv on x and F2_pEnv on y axis
+% Line colour = Red
+xlim([0 1000]);             % Limitting the x axis from 0 to 1000 Hz
+xlabel('Frequency (Hz)');   % Graph x axis label
+ylabel('Peak Amplitude');   % Graph y axis label
+title('Faulty Signal 2 : Envelope Spectrum');            % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% Cepstrum Analysis %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Baseline signal cepstrum analysis 
+[By_Ceps, Bx_Ceps] = cepstrum(BaselineSignal, Fs_Baseline);  % Cepstrum analysis 
+% of baseline signal at a sampling time of 97656 (Fs_Baseline). 
+Bx_Ceps = Bx_Ceps*1000;     % Converting Quefrency (Bx_Ceps) to miliseconds. 
+figure                      % Plotting the Cepstrum of baseline signal
+plot(Bx_Ceps,By_Ceps, 'm'); % Quefrency (Bx_Ceps) in x and real cepstrum
+% (By_Ceps) in y axis. Line colour = Magenta
+grid on;                    % Enabling the graph grid
+xlim([5 50]);               % Limitting the x axis from 5ms to 50ms. 
+xlabel('Quefrency (ms)');   % Graph x axis label
+ylabel('Amplitude');        % Graph y axis label
+title('Baseline Signal : Cepstrum Analysis');            % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+H = gca;               % Getting the handle of the current axis
+H.YAxis.Exponent = 0;  % Making y axis exponents equal to zero
+
+
+% Faulty signal 1 cepstrum analysis 
+[F1y_Ceps, F1x_Ceps] = cepstrum(FaultySignal_1, Fs_Faulty);  % Cepstrum analysis 
+% of faulty signal 1 at a sampling time of 48828 (Fs_Faulty). 
+F1x_Ceps = F1x_Ceps*1000;   % Converting Quefrency (F1x_Ceps) to miliseconds. 
+figure                      % Plotting the Cepstrum of faulty signal 1
+plot(F1x_Ceps,F1y_Ceps, 'b'); % Quefrency (F1x_Ceps) in x and real cepstrum
+% (F1y_Ceps) in y axis. Line colour = Blue
+grid on;                    % Enabling the graph grid
+xlim([5 50]);               % Limitting the x axis from 5ms to 50ms. 
+xlabel('Quefrency (ms)');   % Graph x axis label
+ylabel('Amplitude');        % Graph y axis label
+title('Faulty Signal 1 : Cepstrum Analysis');            % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+% Faulty signal 2 cepstrum analysis 
+[F2y_Ceps, F2x_Ceps] = cepstrum(FaultySignal_2, Fs_Faulty);  % Cepstrum analysis 
+% of faulty signal 2 at a sampling time of 48828 (Fs_Faulty). 
+F2x_Ceps = F2x_Ceps*1000;       % Converting Quefrency (F2x_Ceps) to miliseconds. 
+figure                          % Plotting the Cepstrum of faulty signal 2
+plot(F2x_Ceps,F2y_Ceps, 'r');   % Quefrency (F2x_Ceps) in x and real cepstrum
+% (F2y_Ceps) in y axis. Line colour = Red
+grid on;                        % Enabling the graph grid
+xlim([5 50]);                   % Limitting the x axis from 5ms to 50ms. 
+xlabel('Quefrency (ms)');       % Graph x axis label
+ylabel('Amplitude');            % Graph y axis label
+title('Faulty Signal 2 : Cepstrum Analysis');            % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Kurtosis Analysis %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Baseline signal kurtosis analysis
+B_Kurt = kurtosis(BaselineSignal);  % Kurtosis of baseline signal 
+figure % Plotting the time domain of baseline signal for Kurtosis analysis
+subplot(3, 1, 1)                    % Subplot with 2 other graphs
+plot(Td_Bs, BaselineSignal, 'm');   % Time domain plot of Baseline signal
+% Line colour = Magenta
+xlim([0 0.1]);                      % X axis limit from 0s to 0.1s
+xlabel('Time (s)')                  % X axis label
+ylabel('Acceleration (g)');         % Y axis label
+title(['Baseline Signal : Kurtosis = ' num2str(B_Kurt)]); % Graph title
+% which extracts and displays the Kurtosis value by "num2str"
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+% Faulty signal 1 kurtosis analysis
+F1_Kurt = kurtosis(FaultySignal_1); % Kurtosis of faulty signal 1 
+% Plotting the time domain of faulty signal 1 for Kurtosis analysis
+subplot(3, 1, 2)                   
+plot(Td_Fs1, FaultySignal_1, 'b');  % Time domain plot of faulty signal 1
+% Line colour = Blue
+xlim([0 0.1]);                      % X axis limit from 0s to 0.1s
+xlabel('Time (s)')                  % X axis label
+ylabel('Acceleration (g)');         % Y axis label
+title(['Faulty Signal 1 : Kurtosis = ' num2str(F1_Kurt)]); % Graph title
+% which extracts and displays the Kurtosis value by "num2str"
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+% Faulty signal 2 kurtosis analysis
+F2_Kurt = kurtosis(FaultySignal_2); % Kurtosis of faulty signal 2 
+% Plotting the time domain of faulty signal 2 for Kurtosis analysis
+subplot(3, 1, 3)                   
+plot(Td_Fs2, FaultySignal_2, 'r');  % Time domain plot of faulty signal 2
+% Line colour = Red
+xlim([0 0.1]);                      % X axis limit from 0s to 0.1s
+xlabel('Time (s)')                  % X axis label
+ylabel('Acceleration (g)');         % Y axis label
+title(['Faulty Signal 2 : Kurtosis = ' num2str(F2_Kurt)]); % Graph title
+% which extracts and displays the Kurtosis value by "num2str"
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+%%%%%%%%%%%%%%%%% Kurtogram and Spectral Kurtosis Analysis %%%%%%%%%%%%%%%
+
+% Kurtogram and Spectral Kurtosis Analysis for Baseline Signal
+Bs_Kurtlevel = 9;   % Kurtogram level
+figure % Kurtogram plot for baseline signal with a sampling 
+% time of Fs_Baseline at a level of 9
+kurtogram(BaselineSignal, Fs_Baseline, Bs_Kurtlevel);
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+figure          % Spectral kurtosis plot
+WL_Bs = 1024;   % Window length obtained from kurtogram. 
+pkurtosis(BaselineSignal, Fs_Baseline, WL_Bs); % Spectral kurtosis plot of 
+% baseline signal at a sampling time of Fs_Baseline and 1024 window length
+title('Baseline Signal : Spectral Kurtosis Analysis');	 % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+% Kurtogram and Spectral Kurtosis Analysis for Faulty Signal 1
+Fs1_Kurtlevel = 9;  % Kurtogram level
+figure % Kurtogram plot for faulty signal 1 with a sampling 
+% time of Fs_Faulty at a level of 9
+kurtogram(FaultySignal_1, Fs_Faulty, Fs1_Kurtlevel);
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+figure          % Spectral kurtosis plot
+WL_Fs1 = 32;	% Window length obtained from kurtogram. 
+pkurtosis(FaultySignal_1, Fs_Faulty, WL_Fs1); % Spectral kurtosis plot of 
+% faulty signal 1 at a sampling time of Fs_Faulty and 32 window length
+title('Faulty Signal 1 : Spectral Kurtosis Analysis');	 % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+
+
+% Kurtogram and Spectral Kurtosis Analysis for Faulty Signal 2
+Fs2_Kurtlevel = 9;  % Kurtogram level
+figure % Kurtogram plot for faulty signal 2 with a sampling 
+% time of Fs_Faulty at a level of 9
+kurtogram(FaultySignal_2, Fs_Faulty, Fs2_Kurtlevel);
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
+figure          % Spectral kurtosis plot
+WL_Fs2 = 16;	% Window length obtained from kurtogram. 
+pkurtosis(FaultySignal_2, Fs_Faulty, WL_Fs2); % Spectral kurtosis plot of 
+% faulty signal 2 at a sampling time of Fs_Faulty and 16 window length
+title('Faulty Signal 2 : Spectral Kurtosis Analysis');	 % Graph title
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 18); % Custom font and size
